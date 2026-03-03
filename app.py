@@ -52,7 +52,12 @@ input_df = user_input_features()
 
 # Main Content
 st.title("🍷 Professional Wine Quality Predictor")
-st.markdown("This application uses a Machine Learning model to predict red wine quality.")
+st.markdown("""
+    This interactive application leverages machine learning to predict the quality of red 'Vinho Verde' wine based on its physicochemical properties. 
+    By adjusting various chemical parameters in the sidebar, you can observe how different characteristics influence the predicted quality score. 
+    The underlying model has been trained on a dataset of red wines, aiming to provide insights into what makes a good quality wine.
+    The predicted quality score is on a scale from 0 (very poor) to 10 (excellent).
+    """)
 
 if model is None:
     st.error("Model files not found. Please run 'train_model.py' first.")
@@ -77,13 +82,32 @@ else:
         fig = go.Figure(go.Indicator(
             mode = "gauge+number",
             value = prediction,
-            gauge = {'axis': {'range': [None, 10]}, 'bar': {'color': "#722f37"}}
+            gauge = {'axis': {'range': [None, 10]}, 'bar': {'color': "#722f37"}, 'steps': [
+                {'range': [0, 4], 'color': 'lightgray'},
+                {'range': [4, 7], 'color': 'gray'},
+                {'range': [7, 10], 'color': '#722f37'}
+            ]},
+            domain = {'x': [0, 1], 'y': [0, 1]}
         ))
         st.plotly_chart(fig, use_container_width=True)
 
+    st.subheader("📊 Model Performance Overview")
+    st.markdown("Our prediction system compared three distinct machine learning models:")
+    st.markdown("""
+    *   **Baseline (Linear Regression)**: Achieved a Test RMSE of **0.6565** and R2 of **0.3915**.
+    *   **Random Forest**: Showed superior performance with a Test RMSE of **0.6193** and R2 of **0.4585**.
+    *   **XGBoost**: Performed with a Test RMSE of **0.6378** and R2 of **0.4256**.
+
+    Based on these evaluations, the **Random Forest** model was selected as the champion due to its lowest Test RMSE, indicating the best predictive accuracy on unseen data.
+    """)
+    
     st.subheader("🧬 Decision Drivers")
+    st.markdown("The chart below illustrates the relative importance of each chemical property in the model's decision-making process, ordered from most to least influential.")
     if hasattr(model, 'feature_importances_'):
         feat_imp = pd.DataFrame({'Feature': features, 'Importance': model.feature_importances_})
-        feat_imp = feat_imp.sort_values(by='Importance', ascending=False)
-        fig_imp = px.bar(feat_imp, x='Importance', y='Feature', orientation='h', color_discrete_sequence=['#722f37'])
+        feat_imp = feat_imp.sort_values(by='Importance', ascending=True) # Sort ascending for plotly bar chart to show highest at top
+        fig_imp = px.bar(feat_imp, x='Importance', y='Feature', orientation='h', color_discrete_sequence=['#722f37'],
+                         title="Feature Importance in Predicting Wine Quality")
         st.plotly_chart(fig_imp, use_container_width=True)
+    else:
+        st.info("Feature importance is not available for the selected model type.")
