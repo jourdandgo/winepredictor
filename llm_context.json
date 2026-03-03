@@ -1,0 +1,153 @@
+{
+  "project_objective": "To predict the quality of red 'Vinho Verde' wine based on its physicochemical properties using machine learning models.",
+  "feature_names": [
+    "fixed acidity",
+    "volatile acidity",
+    "citric acid",
+    "residual sugar",
+    "chlorides",
+    "free sulfur dioxide",
+    "total sulfur dioxide",
+    "density",
+    "pH",
+    "sulphates",
+    "alcohol"
+  ],
+  "dataset_descriptive_statistics": {
+    "fixed acidity": {
+      "count": 1359.0,
+      "mean": 8.310596026490067,
+      "std": 1.736989807532466,
+      "min": 4.6,
+      "25%": 7.1,
+      "50%": 7.9,
+      "75%": 9.2,
+      "max": 15.9
+    },
+    "volatile acidity": {
+      "count": 1359.0,
+      "mean": 0.5294775570272259,
+      "std": 0.18303131761907185,
+      "min": 0.12,
+      "25%": 0.39,
+      "50%": 0.52,
+      "75%": 0.64,
+      "max": 1.58
+    },
+    "citric acid": {
+      "count": 1359.0,
+      "mean": 0.2723325974981604,
+      "std": 0.1955365445504639,
+      "min": 0.0,
+      "25%": 0.09,
+      "50%": 0.26,
+      "75%": 0.43,
+      "max": 1.0
+    },
+    "residual sugar": {
+      "count": 1359.0,
+      "mean": 2.5233995584988964,
+      "std": 1.3523137577104198,
+      "min": 0.9,
+      "25%": 1.9,
+      "50%": 2.2,
+      "75%": 2.6,
+      "max": 15.5
+    },
+    "chlorides": {
+      "count": 1359.0,
+      "mean": 0.08812362030905077,
+      "std": 0.04937686244348626,
+      "min": 0.012,
+      "25%": 0.07,
+      "50%": 0.079,
+      "75%": 0.091,
+      "max": 0.611
+    },
+    "free sulfur dioxide": {
+      "count": 1359.0,
+      "mean": 15.893303899926417,
+      "std": 10.447270259048695,
+      "min": 1.0,
+      "25%": 7.0,
+      "50%": 14.0,
+      "75%": 21.0,
+      "max": 72.0
+    },
+    "total sulfur dioxide": {
+      "count": 1359.0,
+      "mean": 46.82597498160412,
+      "std": 33.40894570661654,
+      "min": 6.0,
+      "25%": 22.0,
+      "50%": 38.0,
+      "75%": 63.0,
+      "max": 289.0
+    },
+    "density": {
+      "count": 1359.0,
+      "mean": 0.9967089477557026,
+      "std": 0.0018689171325591398,
+      "min": 0.99007,
+      "25%": 0.9956,
+      "50%": 0.9967,
+      "75%": 0.99782,
+      "max": 1.00369
+    },
+    "pH": {
+      "count": 1359.0,
+      "mean": 3.309786607799853,
+      "std": 0.15503631128729595,
+      "min": 2.74,
+      "25%": 3.21,
+      "50%": 3.31,
+      "75%": 3.4,
+      "max": 4.01
+    },
+    "sulphates": {
+      "count": 1359.0,
+      "mean": 0.6587049300956587,
+      "std": 0.17066689057420695,
+      "min": 0.33,
+      "25%": 0.55,
+      "50%": 0.62,
+      "75%": 0.73,
+      "max": 2.0
+    },
+    "alcohol": {
+      "count": 1359.0,
+      "mean": 10.432315428010792,
+      "std": 1.0820654499402564,
+      "min": 8.4,
+      "25%": 9.5,
+      "50%": 10.2,
+      "75%": 11.1,
+      "max": 14.9
+    },
+    "quality": {
+      "count": 1359.0,
+      "mean": 5.6232523914643116,
+      "std": 0.8235780017165619,
+      "min": 3.0,
+      "25%": 5.0,
+      "50%": 6.0,
+      "75%": 6.0,
+      "max": 8.0
+    }
+  },
+  "model_performance": {
+    "Baseline (Linear Regression)": {
+      "Test RMSE": 0.656512760797608,
+      "R2 Score": 0.3915360499058188
+    },
+    "Random Forest": {
+      "Test RMSE": 0.6193438178474718,
+      "R2 Score": 0.45848296601599026
+    },
+    "XGBoost": {
+      "Test RMSE": 0.6378441442688663,
+      "R2 Score": 0.42564862966537476
+    }
+  },
+  "champion_model": "Random Forest"
+}
