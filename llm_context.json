@@ -149,5 +149,51 @@
       "R2 Score": 0.42564862966537476
     }
   },
-  "champion_model": "Random Forest"
+  "champion_model": "Random Forest",
+  "champion_model_feature_importances": [
+    {
+      "Feature": "alcohol",
+      "Importance": 0.28133402259483276
+    },
+    {
+      "Feature": "sulphates",
+      "Importance": 0.13418256255596359
+    },
+    {
+      "Feature": "volatile acidity",
+      "Importance": 0.11391683945789759
+    },
+    {
+      "Feature": "total sulfur dioxide",
+      "Importance": 0.07746164160028216
+    },
+    {
+      "Feature": "chlorides",
+      "Importance": 0.06552092532754634
+    },
+    {
+      "Feature": "residual sugar",
+      "Importance": 0.0604297589046465
+    },
+    {
+      "Feature": "pH",
+      "Importance": 0.05651874267103411
+    },
+    {
+      "Feature": "density",
+      "Importance": 0.056421994081571204
+    },
+    {
+      "Feature": "fixed acidity",
+      "Importance": 0.05414801739909556
+    },
+    {
+      "Feature": "free sulfur dioxide",
+      "Importance": 0.05025004167518466
+    },
+    {
+      "Feature": "citric acid",
+      "Importance": 0.049815453731945666
+    }
+  ]
 }
