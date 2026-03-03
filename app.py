@@ -8,6 +8,8 @@ import google.generativeai as genai
 import os
 import json
 
+# No longer need 'userdata' directly in app.py for flexible deployment
+
 # Page Config
 st.set_page_config(page_title="Vinho Verde Quality Predictor", page_icon="🍷", layout="wide")
 
@@ -22,13 +24,51 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Configure Gemini API
-# Ensure GOOGLE_API_KEY is set in your environment variables
-if "GOOGLE_API_KEY" not in os.environ:
-    st.error("Gemini API key not found. Please set the GOOGLE_API_KEY environment variable.")
+# Attempt to get API key from Streamlit secrets (for Streamlit Cloud deployment)
+API_KEY = st.secrets.get('GOOGLE_API_KEY')
+# Fallback to environment variable (for local testing or other deployments)
+if not API_KEY:
+    API_KEY = os.environ.get('GOOGLE_API_KEY')
+
+if not API_KEY:
+    st.error("Gemini API key not found. Please set 'GOOGLE_API_KEY' in Streamlit secrets or as an environment variable.")
     st.stop()
 
-genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-model_gemini = genai.GenerativeModel('gemini-pro')
+genai.configure(api_key=API_KEY)
+
+# Logic to find a suitable Gemini model
+model_gemini = None
+try:
+    available_models = []
+    for m in genai.list_models():
+        if 'generateContent' in m.supported_generation_methods:
+            available_models.append(m)
+
+    if not available_models:
+        st.error("No Gemini models supporting 'generateContent' found. Please check your API key and regional availability.")
+    else:
+        preferred_model_name = None
+        # Prioritize 'flash' models
+        for model_info in available_models:
+            if 'flash' in model_info.name:
+                preferred_model_name = model_info.name
+                break
+        
+        # Fallback to 'gemini-pro' if no 'flash' model is found
+        if not preferred_model_name:
+            for model_info in available_models:
+                if 'gemini-pro' in model_info.name:
+                    preferred_model_name = model_info.name
+                    break
+        
+        # Fallback to the first available model if neither 'flash' nor 'gemini-pro' is found
+        if not preferred_model_name:
+            preferred_model_name = available_models[0].name
+
+        model_gemini = genai.GenerativeModel(preferred_model_name)
+except Exception as e:
+    st.error(f"Error configuring Gemini model: {e}")
+
 
 # LLM Context and Prompt Template (as defined in previous steps)
 system_instruction = (
@@ -37,45 +77,16 @@ system_instruction = (
     "Focus on clarity and accuracy, avoiding jargon where possible, but explaining it when necessary."
 )
 
-llm_context_data = {
-    'project_objective': "To predict the quality of red 'Vinho Verde' wine based on its physicochemical properties using machine learning models.",
-    'feature_names': ['fixed acidity', 'volatile acidity', 'citric acid', 'residual sugar', 'chlorides', 'free sulfur dioxide', 'total sulfur dioxide', 'density', 'pH', 'sulphates', 'alcohol'],
-    'dataset_descriptive_statistics': {
-        'fixed acidity': {'count': 1359.0, 'mean': 8.310596026490067, 'std': 1.736989807532466, 'min': 4.6, '25%': 7.1, '50%': 7.9, '75%': 9.2, 'max': 15.9},
-        'volatile acidity': {'count': 1359.0, 'mean': 0.5294775570272259, 'std': 0.18303131761907185, 'min': 0.12, '25%': 0.39, '50%': 0.52, '75%': 0.64, 'max': 1.58},
-        'citric acid': {'count': 1359.0, 'mean': 0.2723325974981604, 'std': 0.1955365445504639, 'min': 0.0, '25%': 0.09, '50%': 0.26, '75%': 0.43, 'max': 1.0},
-        'residual sugar': {'count': 1359.0, 'mean': 2.5234009094922737, 'std': 1.352467556942476, 'min': 0.9, '25%': 1.9, '50%': 2.2, '75%': 2.6, 'max': 15.5},
-        'chlorides': {'count': 1359.0, 'mean': 0.08812435614422369, 'std': 0.04938634177435191, 'min': 0.012, '25%': 0.07, '50%': 0.08, '75%': 0.091, 'max': 0.611},
-        'free sulfur dioxide': {'count': 1359.0, 'mean': 15.893156732892126, 'std': 10.447343513337965, 'min': 1.0, '25%': 7.0, '50%': 14.0, '75%': 21.0, 'max': 72.0},
-        'total sulfur dioxide': {'count': 1359.0, 'mean': 46.24282560706402, 'std': 32.29033320646626, 'min': 6.0, '25%': 22.0, '50%': 38.0, '75%': 62.0, 'max': 289.0},
-        'density': {'count': 1359.0, 'mean': 0.9967098528329654, 'std': 0.001864197262261646, 'min': 0.99, '25%': 0.9956, '50%': 0.9967, '75%': 0.9978,
-        'max': 1.00369},
-        'pH': {'count': 1359.0, 'mean': 3.309786607799853, 'std': 0.15598418042571216, 'min': 2.74, '25%': 3.21, '50%': 3.31, '75%': 3.4,
-        'max': 4.01},
-        'sulphates': {'count': 1359.0, 'mean': 0.6587417218543046, 'std': 0.17435555620942474, 'min': 0.33, '25%': 0.55, '50%': 0.62, '75%': 0.73,
-        'max': 2.0},
-        'alcohol': {'count': 1359.0, 'mean': 10.432376747608535, 'std': 1.0829330691509935, 'min': 8.4, '25%': 9.5, '50%': 10.2, '75%': 11.1,
-        'max': 14.9}
-    },
-    'model_performance': {
-        'Baseline (Linear Regression)': {'Test RMSE': np.float64(0.656512760797608), 'R2 Score': np.float64(0.3915360499058188)},
-        'Random Forest': {'Test RMSE': np.float64(0.6193438178474718), 'R2 Score': np.float64(0.45848296601599026)},
-        'XGBoost': {'Test RMSE': np.float64(0.6378441442688663), 'R2 Score': np.float64(0.42564862966537476)}
-    },
-    'champion_model': 'Random Forest'
-}
-
-# Convert numpy types in llm_context_data to native Python types for JSON serialization
-def convert_numpy_to_python(obj):
-    if isinstance(obj, np.float64):
-        return float(obj)
-    if isinstance(obj, dict):
-        return {k: convert_numpy_to_python(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [convert_numpy_to_python(elem) for elem in obj]
-    return obj
-
-llm_context_data_serializable = convert_numpy_to_python(llm_context_data)
+# Load the LLM context from the JSON file
+try:
+    with open('llm_context.json', 'r') as f:
+        llm_context_data = json.load(f)
+except FileNotFoundError:
+    st.error("LLM context file 'llm_context.json' not found. Please run the context gathering steps first.")
+    st.stop()
+except json.JSONDecodeError:
+    st.error("Error decoding 'llm_context.json'. Please ensure it's a valid JSON file.")
+    st.stop()
 
 prompt_template = f"""{system_instruction}
 
@@ -88,7 +99,10 @@ Based on this context, please answer the following question:
 
 # Function to query Gemini
 def query_gemini(user_question: str):
-    full_context = json.dumps(llm_context_data_serializable, indent=2)
+    if model_gemini is None:
+        return "LLM is not configured properly. Please check the API key and model availability."
+    
+    full_context = json.dumps(llm_context_data, indent=2) # Use loaded context
     prompt = prompt_template.format(llm_context=full_context, user_question=user_question)
     try:
         response = model_gemini.generate_content(prompt)
