@@ -5,4 +5,4 @@ joblib
 plotly
 xgboost
 scikit-learn
-generativeai
+google-generativeai
